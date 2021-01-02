@@ -2,6 +2,7 @@ package com.bacchoterra.mariobros.screens;
 
 import com.bacchoterra.mariobros.Jogo;
 import com.bacchoterra.mariobros.scenes.Hud;
+import com.bacchoterra.mariobros.sprites.Mario;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -44,11 +45,13 @@ public class PlayScreen implements Screen {
     //Box2D
     private World world;
     private Box2DDebugRenderer box2DDebugRenderer;
+    private BodyDef bodyDef;
+    private FixtureDef fixtureDef;
+    private PolygonShape polygonShape;
+    private Body body;
 
-    BodyDef bodyDef;
-    FixtureDef fixtureDef;
-    PolygonShape polygonShape;
-    Body body;
+    //Player
+    private Mario player;
 
 
     public PlayScreen(Jogo jogo) {
@@ -64,7 +67,7 @@ public class PlayScreen implements Screen {
         mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / Jogo.PPM);
         gameCam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2f, 0);
 
-        world = new World(new Vector2(0, 0), true);
+        world = new World(new Vector2(0, -10), true);
         box2DDebugRenderer = new Box2DDebugRenderer();
 
         bodyDef = new BodyDef();
@@ -72,6 +75,8 @@ public class PlayScreen implements Screen {
         polygonShape = new PolygonShape();
 
         criarObjetos();
+
+        player = new Mario(world);
 
 
     }
@@ -82,9 +87,9 @@ public class PlayScreen implements Screen {
 
             Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
             bodyDef.type = BodyDef.BodyType.StaticBody;
-            bodyDef.position.set((rectangle.getX() + rectangle.getWidth()/2) /Jogo.PPM,(rectangle.getY() + rectangle.getHeight()/2) /Jogo.PPM);
+            bodyDef.position.set((rectangle.getX() + rectangle.getWidth() / 2) / Jogo.PPM, (rectangle.getY() + rectangle.getHeight() / 2) / Jogo.PPM);
             body = world.createBody(bodyDef);
-            polygonShape.setAsBox(rectangle.getWidth()/2 / Jogo.PPM,rectangle.getHeight()/2/ Jogo.PPM);
+            polygonShape.setAsBox(rectangle.getWidth() / 2 / Jogo.PPM, rectangle.getHeight() / 2 / Jogo.PPM);
             fixtureDef.shape = polygonShape;
             body.createFixture(fixtureDef);
 
@@ -97,11 +102,11 @@ public class PlayScreen implements Screen {
             bodyDef.type = BodyDef.BodyType.StaticBody;
 
 
-            bodyDef.position.set((rectangle.getX() + rectangle.getWidth()/2) /Jogo.PPM,(rectangle.getY() + rectangle.getHeight()/2) /Jogo.PPM);
+            bodyDef.position.set((rectangle.getX() + rectangle.getWidth() / 2) / Jogo.PPM, (rectangle.getY() + rectangle.getHeight() / 2) / Jogo.PPM);
 
             body = world.createBody(bodyDef);
 
-            polygonShape.setAsBox(rectangle.getWidth()/2 / Jogo.PPM,rectangle.getHeight()/2/ Jogo.PPM);
+            polygonShape.setAsBox(rectangle.getWidth() / 2 / Jogo.PPM, rectangle.getHeight() / 2 / Jogo.PPM);
             fixtureDef.shape = polygonShape;
             body.createFixture(fixtureDef);
 
@@ -123,7 +128,7 @@ public class PlayScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         mapRenderer.render();
-        box2DDebugRenderer.render(world,gameCam.combined);
+        box2DDebugRenderer.render(world, gameCam.combined);
 
 
         jogo.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -159,6 +164,8 @@ public class PlayScreen implements Screen {
 
     private void update(float dt) {
         handleInput(dt);
+        world.step(1 / 60f, 6, 2);
+        gameCam.position.x = player.body.getPosition().x;
         gameCam.update();
         mapRenderer.setView(gameCam);
 
@@ -178,14 +185,24 @@ public class PlayScreen implements Screen {
 
          */
 
-        if (Gdx.input.isTouched() && Gdx.input.getX() > Gdx.graphics.getWidth() / 2) {
-            gameCam.position.x += 7 * dt;
+        if (Gdx.input.isTouched() && Gdx.input.getX() > Gdx.graphics.getWidth() / 2 && player.body.getLinearVelocity().x <= 2f && Gdx.input.getY() > Gdx.graphics.getHeight() /2) {
+
+            player.body.applyLinearImpulse(new Vector2(0.1f,0),player.body.getWorldCenter(),true);
+
             Gdx.app.log("TouchCoord", "X pos -> " + Gdx.input.getX() + " // " + "Y pos -> " + Gdx.input.getY());
         }
 
-        if (Gdx.input.isTouched() && Gdx.input.getX() < Gdx.graphics.getWidth() / 2) {
-            gameCam.position.x -= 7 * dt;
+        if (Gdx.input.isTouched() && Gdx.input.getX() < Gdx.graphics.getWidth() / 2 && player.body.getLinearVelocity().x >= -2f && Gdx.input.getY() > Gdx.graphics.getHeight() /2) {
+
+            player.body.applyLinearImpulse(new Vector2(-0.1f,0),player.body.getWorldCenter(),true);
+
             Gdx.app.log("TouchCoord", "X pos -> " + Gdx.input.getX() + " // " + "Y pos -> " + Gdx.input.getY());
+
+        }
+
+        if (Gdx.input.justTouched() && Gdx.input.getY() < Gdx.graphics.getHeight() /2){
+
+            player.body.applyLinearImpulse(new Vector2(0,4f),player.body.getWorldCenter(),true);
 
         }
 
