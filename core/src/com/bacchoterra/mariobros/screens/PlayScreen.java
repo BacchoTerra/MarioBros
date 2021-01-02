@@ -3,6 +3,7 @@ package com.bacchoterra.mariobros.screens;
 import com.bacchoterra.mariobros.Jogo;
 import com.bacchoterra.mariobros.scenes.Hud;
 import com.bacchoterra.mariobros.sprites.Mario;
+import com.bacchoterra.mariobros.tools.B2WorldCreator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -45,10 +46,6 @@ public class PlayScreen implements Screen {
     //Box2D
     private World world;
     private Box2DDebugRenderer box2DDebugRenderer;
-    private BodyDef bodyDef;
-    private FixtureDef fixtureDef;
-    private PolygonShape polygonShape;
-    private Body body;
 
     //Player
     private Mario player;
@@ -70,48 +67,10 @@ public class PlayScreen implements Screen {
         world = new World(new Vector2(0, -10), true);
         box2DDebugRenderer = new Box2DDebugRenderer();
 
-        bodyDef = new BodyDef();
-        fixtureDef = new FixtureDef();
-        polygonShape = new PolygonShape();
 
-        criarObjetos();
+        new B2WorldCreator(world,map);
 
         player = new Mario(world);
-
-
-    }
-
-    private void criarObjetos() {
-
-        for (MapObject object : map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)) {
-
-            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
-            bodyDef.type = BodyDef.BodyType.StaticBody;
-            bodyDef.position.set((rectangle.getX() + rectangle.getWidth() / 2) / Jogo.PPM, (rectangle.getY() + rectangle.getHeight() / 2) / Jogo.PPM);
-            body = world.createBody(bodyDef);
-            polygonShape.setAsBox(rectangle.getWidth() / 2 / Jogo.PPM, rectangle.getHeight() / 2 / Jogo.PPM);
-            fixtureDef.shape = polygonShape;
-            body.createFixture(fixtureDef);
-
-
-        }
-
-        for (MapObject object : map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)) {
-
-            Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
-            bodyDef.type = BodyDef.BodyType.StaticBody;
-
-
-            bodyDef.position.set((rectangle.getX() + rectangle.getWidth() / 2) / Jogo.PPM, (rectangle.getY() + rectangle.getHeight() / 2) / Jogo.PPM);
-
-            body = world.createBody(bodyDef);
-
-            polygonShape.setAsBox(rectangle.getWidth() / 2 / Jogo.PPM, rectangle.getHeight() / 2 / Jogo.PPM);
-            fixtureDef.shape = polygonShape;
-            body.createFixture(fixtureDef);
-
-
-        }
 
 
     }
@@ -159,6 +118,12 @@ public class PlayScreen implements Screen {
 
     @Override
     public void dispose() {
+
+        map.dispose();
+        mapRenderer.dispose();
+        world.dispose();
+        box2DDebugRenderer.dispose();
+        hud.dispose();
 
     }
 

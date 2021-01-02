@@ -8,12 +8,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 
 
-public class Hud {
+public class Hud implements Disposable {
 
     public Stage stage;
     public Viewport viewport;
@@ -49,5 +50,10 @@ public class Hud {
         worldLabel = new Label("1-1", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
         scoreLabel = new Label("45", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
     }
 }
