@@ -4,25 +4,21 @@ import com.bacchoterra.mariobros.Jogo;
 import com.bacchoterra.mariobros.scenes.Hud;
 import com.bacchoterra.mariobros.sprites.Mario;
 import com.bacchoterra.mariobros.tools.B2WorldCreator;
+import com.bacchoterra.mariobros.tools.WorldContactListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -50,6 +46,9 @@ public class PlayScreen implements Screen {
     //Player
     private Mario player;
 
+    //Textures
+    private TextureAtlas atlas;
+
 
     public PlayScreen(Jogo jogo) {
         this.jogo = jogo;
@@ -70,9 +69,18 @@ public class PlayScreen implements Screen {
 
         new B2WorldCreator(world,map);
 
-        player = new Mario(world);
+        atlas = new TextureAtlas("mario_and_enemies.pack");
+
+        player = new Mario(world,this);
+
+        world.setContactListener(new WorldContactListener());
 
 
+
+    }
+
+    public TextureAtlas getAtlas(){
+        return this.atlas;
     }
 
     @Override
@@ -88,6 +96,11 @@ public class PlayScreen implements Screen {
 
         mapRenderer.render();
         box2DDebugRenderer.render(world, gameCam.combined);
+
+        jogo.batch.setProjectionMatrix(gameCam.combined);
+        jogo.batch.begin();
+        player.draw(jogo.batch);
+        jogo.batch.end();
 
 
         jogo.batch.setProjectionMatrix(hud.stage.getCamera().combined);
@@ -130,6 +143,7 @@ public class PlayScreen implements Screen {
     private void update(float dt) {
         handleInput(dt);
         world.step(1 / 60f, 6, 2);
+        player.update(dt);
         gameCam.position.x = player.body.getPosition().x;
         gameCam.update();
         mapRenderer.setView(gameCam);
