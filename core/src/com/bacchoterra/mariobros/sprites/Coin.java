@@ -1,5 +1,6 @@
 package com.bacchoterra.mariobros.sprites;
 
+import com.bacchoterra.mariobros.Jogo;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
@@ -11,6 +12,7 @@ public class Coin extends InteractiveTileObject{
         super(world, rectangle, map);
 
         fixture.setUserData(this);
+        setCategoryFilter(Jogo.COIN_BIT);
     }
 
     @Override

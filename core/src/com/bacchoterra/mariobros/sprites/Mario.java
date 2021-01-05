@@ -122,6 +122,10 @@ public class Mario extends Sprite {
         body = world.createBody(bodyDef);
 
         circleShape.setRadius(6f / Jogo.PPM);
+
+        fixtureDef.filter.categoryBits = Jogo.MARIO_BIT;
+        fixtureDef.filter.maskBits = Jogo.BRICK_BIT |Jogo.DEFAULT_BIT |Jogo.COIN_BIT;
+
         fixtureDef.shape = circleShape;
         body.createFixture(fixtureDef);
 
